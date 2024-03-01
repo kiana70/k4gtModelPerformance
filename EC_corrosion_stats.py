@@ -34,12 +34,27 @@ def filter_identifications(
         only eligibile identifications.
 
     """
+    #AllEN'S CODE
     unique_identifications = cleaned_ILI_df["Identification"].dropna().astype(str).apply(lambda x: x.strip())
     unique_identifications = unique_identifications.apply(lambda x: x.lower())
+    print("Allen Len before remove empty str:  ", str(len(unique_identifications))) #k4gt added 2/29/24
 
-    # remove empty str
+    #K4GT METHOD 2
+    unique_identifications_k4gt = cleaned_ILI_df["Identification"].dropna().str.strip().str.lower()
+    print("k4gt Len before remove empty str:  ", str(len(unique_identifications_k4gt))) #k4gt added 2/29/24
+
+    #ALLEN'S CODE remove empty str
     empty_str_identification = unique_identifications == ''
     unique_identifications = unique_identifications[~empty_str_identification]
+    print("Allen Len AFTER remove empty str:  ", str(len(unique_identifications))) #k4gt added 2/29/24
+
+
+    #K4GT METHOD 2 remove empty str
+    empty_str_identification = unique_identifications_k4gt == ''
+    unique_identifications_k4gt = unique_identifications_k4gt[~empty_str_identification]
+    print("k4gt Len AFTER remove empty str:  ", str(len(unique_identifications_k4gt))) #k4gt added 2/29/24
+
+
 
     # filter out all the rows whose identification is not in unique_identification
     no_NA_identification_ILI = cleaned_ILI_df.dropna(subset=["Identification"])
@@ -52,7 +67,7 @@ def filter_identifications(
     # Print out some statistics
     unique_identification_freq = filtered_ILI_df["Identification"].value_counts()
     print(
-        f"{np.sum(unique_identification_freq == 1) / len(unique_identification_freq)*100:.3f}% "
+        f"{np.sum(unique_identification_freq == 1) / len(unique_identification_freq)*100:.5f}% "
         "of all identifications has only 1 occurence"
     )
     return unique_identifications, filtered_ILI_df
@@ -79,6 +94,10 @@ def _get_external_anomaly_row_mask(segment: pd.DataFrame) -> pd.Series:
 
     # keep rows with non-null "Depth (%)" field
     mask_has_depth = ~segment["Depth (%)"].isna()
+    print(f"Total num of rows with non-null 'Depth (%)' {mask_has_depth.sum()}")
+    #K4GT edit below = add "Depth (%)" > 0
+    mask_has_depth_and_greater_than_0 = (~segment["Depth (%)"].isna()) & (segment["Depth (%)"] > 0)
+    print(f"Total num of rows with non-null AND greater than 0 'Depth (%)' {mask_has_depth_and_greater_than_0 .sum()}")
     # keep rows with is "External"
     mask_is_external = segment["Internal"].str.lower() == "external"
     # keep rows with "WT (in)" and "OD (in)" present
